@@ -10,12 +10,14 @@ router.get("/", (req, res) => {
   if (req.query.hashtag) {
     Tweet.find({ content: {$regex : req.query.hashtag} })
     .populate('user')
+    .populate('likes')
     .then((data) => {
     res.json({ hashtag: data });
       });
     } else {
       Tweet.find()
       .populate('user')
+      .populate('likes')
       .then((data) => {
     res.json({ allTweets: data });
     });
@@ -31,6 +33,7 @@ router.post("/newtweet/:token", (req, res) => {
         content: req.body.content,
         date: new Date(),
         user: data._id,
+        likes: [],
       });
 
       newTweet.save().then((data) => {
@@ -43,9 +46,34 @@ router.post("/newtweet/:token", (req, res) => {
   });
 });
 
+// ROUTE POST LIKE
+router.post("/like/:token", (req, res) => {
+  // Check if the user is connected
+  User.findOne({ token: req.params.token }).then((data) => {
+    if (data) {
+      console.log("userData:", data);
+      let user = data._id;
+      console.log("user:", user);
+      // Find tweet
+      Tweet.findOne({ _id: req.body.tweetId}).then((data)  => {
+        console.log("tweetData:", data)
+        const likesCount = data.likes;
+        likesCount.push(user);
+        console.log("likesCount:", likesCount);
+          Tweet.updateOne({_id: req.body.tweetId}, {likes: likesCount}).then((data) => {
+            res.json({ result: true, tweet: data });
+            console.log("tweetUpdatedData:", data)
+          });})
+        } else {
+      // User is not connected
+      res.json({ result: false, error: "User not connected" });
+    }
+  });
+});
+
 // ROUTE DELETE TWEET
-router.delete('/', (req, res) => {
-  Tweet.deleteOne({ _id : req.params.id})
+router.delete('/:id', (req, res) => {
+  Tweet.deleteOne({ _id: req.params.id})
     .then(() => {
       Tweet.find()
         .then(data => res.json({ message: "tweet deleted", allTweets: data }))})
