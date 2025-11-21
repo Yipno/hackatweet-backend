@@ -72,6 +72,33 @@ router.post('/like/:token', (req, res) => {
   });
 });
 
+// ROUTE DELETE LIKE
+router.post('/dislike/:token', (req, res) => {
+  // Check if the user is connected
+  User.findOne({ token: req.params.token }).then(data => {
+    if (data) {
+      console.log('userData:', data);
+      let user = data._id;
+      console.log('user:', user);
+      // Find tweet
+      Tweet.findOne({ _id: req.body.tweetId }).then(data => {
+        console.log('tweetData:', data);
+        const likesCount = data.likes;
+        const updatedLikes = likesCount.filter(id => id.toString() !== user.toString());
+        console.log('likesCount:', likesCount);
+        Tweet.updateOne({ _id: req.body.tweetId }, { likes: updatedLikes }).then(data => {
+          res.json({ result: true, tweet: data });
+          console.log('tweetUpdatedData:', data);
+        });
+      });
+    } else {
+      // User is not connected
+      res.json({ result: false, error: 'User not connected' });
+    }
+  });
+});
+
+
 // ROUTE DELETE TWEET
 router.delete('/:id', (req, res) => {
   Tweet.deleteOne({ _id: req.params.id })
