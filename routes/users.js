@@ -9,9 +9,9 @@ const bcrypt = require('bcrypt');
 
 // TEST : GET all users
 router.get('/', (req, res) => {
- User.find().then(data => {
-   res.json({ allUsers: data });
- });
+  User.find().then(data => {
+    res.json({ allUsers: data });
+  });
 });
 
 // ROUTE POST USERS SIGNUP
@@ -22,7 +22,7 @@ router.post('/signup', (req, res) => {
   }
 
   // Check if the user has not already been registered
-  User.findOne({ username: req.body.username}).then(data => {
+  User.findOne({ username: req.body.username }).then(data => {
     if (data === null) {
       const hash = bcrypt.hashSync(req.body.password, 10);
 
