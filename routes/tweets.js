@@ -8,7 +8,7 @@ const Tweet = require('../models/tweets');
 // TEST : GET tweets by hashtag / all tweets
 router.get('/', (req, res) => {
   if (req.query.hashtag) {
-    Tweet.find({ content: { $regex: req.query.hashtag } })
+    Tweet.find({ content: { $regex: new RegExp(req.query.hashtag, 'i') } })
       .populate('user')
       .populate('likes')
       .then(data => {
@@ -97,7 +97,6 @@ router.post('/dislike/:token', (req, res) => {
     }
   });
 });
-
 
 // ROUTE DELETE TWEET
 router.delete('/:id', (req, res) => {
